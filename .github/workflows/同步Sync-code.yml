@@ -1,16 +1,29 @@
 name: 同步Sync-code
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:    # 添加手动触发
+    # 可选：添加手动输入的参数
+    inputs:
+      branch:
+        description: '要同步的分支'
+        required: true
+        default: 'master'
+        type: choice
+        options:
+        - master
+        - main
+        - develop
 
 jobs:
   sync-to-jihulab:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'master' }}  # 根据输入切换分支
+      
       - uses: adambirds/sync-github-to-gitlab-action@v1.1.0
         with:
           destination_repository: git@gitee.com:hashgopeed/nezha.git
-          destination_branch_name: master
+          destination_branch_name: ${{ github.event.inputs.branch || 'master' }}
           destination_ssh_key: ${{ secrets.GITEE_SSH_KEY }}
